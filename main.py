@@ -3,7 +3,6 @@ import json
 import os
 from collections import defaultdict, Counter
 
-# ✅ Coloque essa linha logo depois dos imports!
 st.set_page_config(page_title="Leitura de Leis por Cards", layout="centered")
 
 # 🔐 Login do usuário
@@ -12,13 +11,9 @@ if not usuario:
     st.warning("Digite seu nome para continuar.")
     st.stop()
 
-# 🔁 Criar pasta 'dados' se não existir
 os.makedirs("dados", exist_ok=True)
-
-# 🔁 Caminho personalizado para o arquivo do usuário
 ARQUIVO_JSON = f"dados/{usuario}_perguntas.json"
 
-# Carregar dados existentes (do arquivo do usuário)
 if os.path.exists(ARQUIVO_JSON):
     with open(ARQUIVO_JSON, "r", encoding="utf-8") as f:
         dados = json.load(f)
@@ -28,25 +23,20 @@ if os.path.exists(ARQUIVO_JSON):
 else:
     dados = []
 
-
-
-# 🔹 Controle de tamanho de fonte
 st.sidebar.markdown("---")
 fonte = st.sidebar.slider("🔠 Tamanho da Fonte (px):", 12, 30, 16)
 
 st.markdown(f"<h1 style='font-size: {fonte + 20}px;'>📚 Leitura de Leis por Cards</h1>", unsafe_allow_html=True)
 
-# Inicializar estado de leitura
 if 'leituras' not in st.session_state:
     st.session_state.leituras = {}
 
-# 🔹 Obter listas únicas de leis e concursos já cadastrados
 leis_existentes = sorted(set(d.get("lei", "") for d in dados if d.get("lei")))
 concursos_existentes = sorted(set(d.get("concurso", "") for d in dados if d.get("concurso")))
 
 # 🔹 Cadastro de nova pergunta
 st.sidebar.header("➕ Cadastrar nova pergunta")
-with st.sidebar.form("cadastro_form"):
+with st.sidebar.form("cadastro_form", clear_on_submit=True):
     concurso = st.selectbox("Concurso", options=[""] + concursos_existentes, index=0)
     concurso_livre = st.text_input("Outro concurso (se novo)")
     lei = st.selectbox("Lei", options=[""] + leis_existentes, index=0)
@@ -70,23 +60,19 @@ with st.sidebar.form("cadastro_form"):
             json.dump(dados, f, ensure_ascii=False, indent=2)
         st.success("✅ Pergunta salva com sucesso!")
 
-# 🔹 Menu de seleção de concurso e lei
 st.sidebar.markdown("---")
 st.sidebar.markdown("📚 **Filtrar por Concurso e Lei**")
 concurso_selecionado = st.sidebar.selectbox("Concurso:", ["Selecionar"] + concursos_existentes)
 leis_filtradas = sorted(set(d["lei"] for d in dados if d.get("concurso") == concurso_selecionado)) if concurso_selecionado != "Selecionar" else []
 lei_selecionada = st.sidebar.selectbox("Lei:", ["Selecionar"] + leis_filtradas)
 
-# 🔹 Filtro adicional por número de leituras
 filtro_leituras = st.sidebar.selectbox(
     "Filtrar cards por número de leituras:",
     ["Todos", "Nunca lidos", "1 ou mais", "5 ou mais", "10 ou mais"]
 )
 
-# 🔹 Campo de busca (combinado)
 busca = st.text_input("🔍 Buscar por palavra-chave, artigo, lei ou concurso:")
 
-# 🔹 Filtrar perguntas conforme seleção
 perguntas_filtradas = []
 for i, item in enumerate(dados):
     vezes = item.get("vezes_lido", 0)
@@ -102,7 +88,6 @@ for i, item in enumerate(dados):
             ):
                 perguntas_filtradas.append((i, item))
 
-# 🔹 Leituras e rankings
 leituras_por_lei = Counter()
 mais_lido_por_lei = {}
 for _, item in perguntas_filtradas:
@@ -111,16 +96,14 @@ for _, item in perguntas_filtradas:
     if lei not in mais_lido_por_lei or item.get("vezes_lido", 0) > mais_lido_por_lei[lei].get("vezes_lido", 0):
         mais_lido_por_lei[lei] = item
 
-# 🔹 Exibir cards
 if concurso_selecionado != "Selecionar" and lei_selecionada != "Selecionar":
     st.markdown(f"<h2 style='font-size: {fonte + 8}px;'>🎯 Concurso: {concurso_selecionado}</h2>", unsafe_allow_html=True)
     st.markdown(f"<h3 style='font-size: {fonte + 4}px;'>📘 Lei: {lei_selecionada}</h3>", unsafe_allow_html=True)
     for i, item in perguntas_filtradas:
-        with st.expander(f"📌 {item['pergunta']}"):
+        with st.expander(f"📌 <span style='font-size:{fonte}px'>{item['pergunta']}</span>", unsafe_allow_html=True):
             st.markdown(f"<div style='font-size: {fonte}px;'><b>Resposta:</b> {item['resposta']}</div>", unsafe_allow_html=True)
             st.caption(f"📖 Referência: {item['referencia']}  \n📘 Lei: {item['lei']}  \n🎯 Concurso: {item.get('concurso', '[Sem Concurso]')}")
-
-            col1, col2, col3 = st.columns([1, 1, 2])
+            col1, col2, col3 = st.columns([1, 1, 1])
 
             with col1:
                 if st.button(f"✅ Lido ({item.get('vezes_lido', 0)}x)", key=f"btn_lido_{i}"):
@@ -130,20 +113,22 @@ if concurso_selecionado != "Selecionar" and lei_selecionada != "Selecionar":
                     st.rerun()
 
             with col2:
-                if st.button("✏️ Editar", key=f"editar_{i}"):
+                with st.expander("✏️ Editar", expanded=False):
                     with st.form(f"form_editar_{i}"):
-                        nova_pergunta = st.text_area("Editar pergunta", value=item["pergunta"])
-                        nova_resposta = st.text_area("Editar resposta", value=item["resposta"])
-                        nova_referencia = st.text_input("Editar referência", value=item["referencia"])
-                        nova_concurso = st.text_input("Editar concurso", value=item["concurso"])
-                        nova_lei = st.text_input("Editar lei", value=item["lei"])
+                        nova_pergunta = st.text_area("Pergunta", value=item["pergunta"])
+                        nova_resposta = st.text_area("Resposta", value=item["resposta"])
+                        nova_referencia = st.text_input("Referência", value=item["referencia"])
+                        nova_concurso = st.text_input("Concurso", value=item["concurso"])
+                        nova_lei = st.text_input("Lei", value=item["lei"])
                         confirmar = st.form_submit_button("Salvar alterações")
                         if confirmar:
-                            dados[i]["pergunta"] = nova_pergunta
-                            dados[i]["resposta"] = nova_resposta
-                            dados[i]["referencia"] = nova_referencia
-                            dados[i]["concurso"] = nova_concurso
-                            dados[i]["lei"] = nova_lei
+                            dados[i].update({
+                                "pergunta": nova_pergunta,
+                                "resposta": nova_resposta,
+                                "referencia": nova_referencia,
+                                "concurso": nova_concurso,
+                                "lei": nova_lei
+                            })
                             with open(ARQUIVO_JSON, "w", encoding="utf-8") as f:
                                 json.dump(dados, f, ensure_ascii=False, indent=2)
                             st.success("✅ Alterações salvas com sucesso!")
@@ -157,8 +142,6 @@ if concurso_selecionado != "Selecionar" and lei_selecionada != "Selecionar":
                     st.warning("❌ Card excluído.")
                     st.rerun()
 
-
-# 🔹 Ranking de leis mais lidas
 st.sidebar.markdown("---")
 st.sidebar.markdown("📊 **Ranking de Leis Mais Lidas**")
 mais_lidas = leituras_por_lei.most_common(5)

@@ -3,18 +3,11 @@ streamlit run main.py
 https://lei-card.streamlit.app/
 
 
-
-1-Adicione todos os arquivos modificados:
+COMMIT E push
 
 git add .
-
-2-CRIAR UM NOVO COMMIT 
-git commit -m
-
-3-Sincronize seu repositório local com o GitHub remoto:
-
-git pull origin main --rebase
-
-4-Depois envie as atualizações normalmente:
-
+git commit -m "Corrige: substitui experimental_rerun por rerun"
 git push origin main
+
+
+https://share.streamlit.io/
