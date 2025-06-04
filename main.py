@@ -95,44 +95,44 @@ if arquivo_json and st.sidebar.button("📂 Importar este arquivo"):
     st.rerun()
     
 
-# 🔹 Cadastro de nova pergunta
-st.sidebar.header("➕ Cadastrar nova pergunta")
-with st.sidebar.form("cadastro_form", clear_on_submit=True):
-    concurso = st.selectbox("Concurso", options=[""] + concursos_existentes, index=0)
-    concurso_livre = st.text_input("Outro concurso (se novo)")
-    lei = st.selectbox("Lei", options=[""] + leis_existentes, index=0)
-    lei_livre = st.text_input("Outra lei (se nova)")
-    pergunta = st.text_area("Pergunta")
-    resposta = st.text_area("Resposta")
-    referencia = st.text_input("Referência (Art., Inciso, § etc.)")
-    submit = st.form_submit_button("Salvar")
+st.markdown("## 🎯 Selecione um concurso para começar")
 
-    if submit:
-        nova = {
-            "concurso": concurso_livre if concurso_livre else concurso,
-            "lei": lei_livre if lei_livre else lei,
-            "pergunta": pergunta,
-            "resposta": resposta,
-            "referencia": referencia,
-            "vezes_lido": 0
-        }
-        dados.append(nova)
-        with open(ARQUIVO_JSON, "w", encoding="utf-8") as f:
-            json.dump(dados, f, ensure_ascii=False, indent=2)
-        st.success("✅ Pergunta salva com sucesso!")
+concursos_disponiveis = sorted(set(d["concurso"] for d in dados if d.get("concurso")))
+concurso_escolhido = st.selectbox("Concurso:", ["Selecionar"] + concursos_disponiveis)
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("📚 **Filtrar por Concurso e Lei**")
-concurso_selecionado = st.sidebar.selectbox("Concurso:", ["Selecionar"] + concursos_existentes)
-leis_filtradas = sorted(set(d["lei"] for d in dados if d.get("concurso") == concurso_selecionado)) if concurso_selecionado != "Selecionar" else []
-lei_selecionada = st.sidebar.selectbox("Lei:", ["Selecionar"] + leis_filtradas)
+if concurso_escolhido != "Selecionar":
+    leis_do_concurso = sorted(set(d["lei"] for d in dados if d.get("concurso") == concurso_escolhido))
+    lei_escolhida = st.selectbox("📘 Lei do concurso:", ["Selecionar"] + leis_do_concurso)
 
-filtro_leituras = st.sidebar.selectbox(
-    "Filtrar cards por número de leituras:",
-    ["Todos", "Nunca lidos", "1 ou mais", "5 ou mais", "10 ou mais"]
-)
+    if lei_escolhida != "Selecionar":
+        st.markdown(f"### Cards da Lei **{lei_escolhida}** para o Concurso **{concurso_escolhido}**")
+        
+        filtro_leituras = st.selectbox(
+            "Filtrar cards por número de leituras:",
+            ["Todos", "Nunca lidos", "1 ou mais", "5 ou mais", "10 ou mais"]
+        )
 
-busca = st.text_input("🔍 Buscar por palavra-chave, artigo, lei ou concurso:")
+        busca = st.text_input("🔍 Buscar por palavra-chave:")
+
+        perguntas_filtradas = []
+        for i, item in enumerate(dados):
+            vezes = item.get("vezes_lido", 0)
+            if (
+                item["concurso"] == concurso_escolhido and
+                item["lei"] == lei_escolhida and
+                (
+                    busca.lower() in item["pergunta"].lower() or
+                    busca.lower() in item["referencia"].lower()
+                ) and (
+                    filtro_leituras == "Todos" or
+                    (filtro_leituras == "Nunca lidos" and vezes == 0) or
+                    (filtro_leituras == "1 ou mais" and vezes >= 1) or
+                    (filtro_leituras == "5 ou mais" and vezes >= 5) or
+                    (filtro_leituras == "10 ou mais" and vezes >= 10)
+                )
+            ):
+                perguntas_filtradas.append((i, item))
+
 
 perguntas_filtradas = []
 for i, item in enumerate(dados):
