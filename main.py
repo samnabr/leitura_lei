@@ -73,6 +73,27 @@ if arquivos_backup:
 else:
     st.sidebar.caption("Nenhum backup encontrado.")
 
+# 🔄 Importar perguntas.json para o usuário atual
+# 🔄 Importar qualquer arquivo JSON
+st.sidebar.markdown("📥 **Importar arquivo JSON personalizado**")
+arquivo_json = st.sidebar.file_uploader("Escolha um arquivo .json", type="json")
+
+if arquivo_json and st.sidebar.button("📂 Importar este arquivo"):
+    # Backup antes de sobrescrever
+    backup_path = f"backup/{usuario}_antes_da_importacao_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    with open(ARQUIVO_JSON, "r", encoding="utf-8") as f_atual:
+        conteudo_atual = json.load(f_atual)
+    with open(backup_path, "w", encoding="utf-8") as f_backup:
+        json.dump(conteudo_atual, f_backup, ensure_ascii=False, indent=2)
+
+    # Fazer a importação
+    dados = json.load(arquivo_json)
+    with open(ARQUIVO_JSON, "w", encoding="utf-8") as f_out:
+        json.dump(dados, f_out, ensure_ascii=False, indent=2)
+
+    st.sidebar.success("✅ Arquivo importado com sucesso!")
+    st.rerun()
+    
 
 # 🔹 Cadastro de nova pergunta
 st.sidebar.header("➕ Cadastrar nova pergunta")
@@ -136,9 +157,12 @@ for _, item in perguntas_filtradas:
     if lei not in mais_lido_por_lei or item.get("vezes_lido", 0) > mais_lido_por_lei[lei].get("vezes_lido", 0):
         mais_lido_por_lei[lei] = item
 
-if concurso_selecionado != "Selecionar" and lei_selecionada != "Selecionar":
-    st.markdown(f"<h2 style='font-size: {fonte + 8}px;'>🎯 Concurso: {concurso_selecionado}</h2>", unsafe_allow_html=True)
-    st.markdown(f"<h3 style='font-size: {fonte + 4}px;'>📘 Lei: {lei_selecionada}</h3>", unsafe_allow_html=True)
+if perguntas_filtradas:
+    if concurso_selecionado != "Selecionar":
+        st.markdown(f"<h2 style='font-size: {fonte + 8}px;'>🎯 Concurso: {concurso_selecionado}</h2>", unsafe_allow_html=True)
+    if lei_selecionada != "Selecionar":
+        st.markdown(f"<h3 style='font-size: {fonte + 4}px;'>📘 Lei: {lei_selecionada}</h3>", unsafe_allow_html=True)
+
 
     # Paginação
     PER_PAGE = 5
