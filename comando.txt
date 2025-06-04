@@ -7,7 +7,7 @@ COMMIT E push
 
 git pull origin main --rebase
 git add .
-git commit -m "campo do formulário são limpos"
+git commit -m "ATUALIZAÇÃO"
 git push origin main
 
 

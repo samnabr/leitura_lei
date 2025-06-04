@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import os
 from collections import defaultdict, Counter
+from datetime import datetime
 
 st.set_page_config(page_title="Leitura de Leis por Cards", layout="centered")
 
@@ -13,6 +14,24 @@ if not usuario:
 
 os.makedirs("dados", exist_ok=True)
 ARQUIVO_JSON = f"dados/{usuario}_perguntas.json"
+
+# Criar pasta de backup
+os.makedirs("backup", exist_ok=True)
+
+# Criar backup ao carregar dados
+if os.path.exists(ARQUIVO_JSON):
+    nome_backup = f"backup/{usuario}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    with open(ARQUIVO_JSON, "r", encoding="utf-8") as f:
+        dados = json.load(f)
+        with open(nome_backup, "w", encoding="utf-8") as f_backup:
+            json.dump(dados, f_backup, ensure_ascii=False, indent=2)
+        for d in dados:
+            if "vezes_lido" not in d:
+                d["vezes_lido"] = 0
+else:
+    dados = []
+
+
 
 if os.path.exists(ARQUIVO_JSON):
     with open(ARQUIVO_JSON, "r", encoding="utf-8") as f:
@@ -33,6 +52,27 @@ if 'leituras' not in st.session_state:
 
 leis_existentes = sorted(set(d.get("lei", "") for d in dados if d.get("lei")))
 concursos_existentes = sorted(set(d.get("concurso", "") for d in dados if d.get("concurso")))
+
+# Menu lateral: Restaurar backup
+st.sidebar.markdown("🛠️ **Restaurar Backup**")
+arquivos_backup = sorted(
+    [f for f in os.listdir("backup") if f.startswith(usuario)],
+    reverse=True
+)
+
+if arquivos_backup:
+    escolha_backup = st.sidebar.selectbox("Selecione um backup para restaurar", arquivos_backup)
+    if st.sidebar.button("♻️ Restaurar este backup"):
+        caminho = os.path.join("backup", escolha_backup)
+        with open(caminho, "r", encoding="utf-8") as f:
+            dados = json.load(f)
+        with open(ARQUIVO_JSON, "w", encoding="utf-8") as f_out:
+            json.dump(dados, f_out, ensure_ascii=False, indent=2)
+        st.sidebar.success("✅ Backup restaurado com sucesso!")
+        st.rerun()
+else:
+    st.sidebar.caption("Nenhum backup encontrado.")
+
 
 # 🔹 Cadastro de nova pergunta
 st.sidebar.header("➕ Cadastrar nova pergunta")
@@ -99,7 +139,23 @@ for _, item in perguntas_filtradas:
 if concurso_selecionado != "Selecionar" and lei_selecionada != "Selecionar":
     st.markdown(f"<h2 style='font-size: {fonte + 8}px;'>🎯 Concurso: {concurso_selecionado}</h2>", unsafe_allow_html=True)
     st.markdown(f"<h3 style='font-size: {fonte + 4}px;'>📘 Lei: {lei_selecionada}</h3>", unsafe_allow_html=True)
-    for i, item in perguntas_filtradas:
+
+    # Paginação
+    PER_PAGE = 5
+    total_paginas = (len(perguntas_filtradas) - 1) // PER_PAGE + 1
+
+    if 'pagina' not in st.session_state:
+        st.session_state['pagina'] = 1
+
+    pagina_atual = st.sidebar.number_input(
+        "Página", min_value=1, max_value=total_paginas, value=st.session_state['pagina'], step=1
+    )
+
+    inicio = (pagina_atual - 1) * PER_PAGE
+    fim = inicio + PER_PAGE
+    perguntas_pagina = perguntas_filtradas[inicio:fim]
+
+    for i, item in perguntas_pagina:
         with st.expander(f"📌 {item['pergunta']}"):
             st.markdown(f"<div style='font-size: {fonte}px;'><b>Resposta:</b> {item['resposta']}</div>", unsafe_allow_html=True)
             st.caption(f"📖 Referência: {item['referencia']}  \n📘 Lei: {item['lei']}  \n🎯 Concurso: {item.get('concurso', '[Sem Concurso]')}")
@@ -150,6 +206,18 @@ if concurso_selecionado != "Selecionar" and lei_selecionada != "Selecionar":
                         json.dump(dados, f, ensure_ascii=False, indent=2)
                     st.warning("❌ Card excluído.")
                     st.rerun()
+
+    # Botões de navegação entre páginas
+    col_pag1, col_pag2 = st.columns(2)
+    with col_pag1:
+        if pagina_atual > 1 and st.button("⬅️ Página Anterior"):
+            st.session_state['pagina'] = pagina_atual - 1
+            st.rerun()
+    with col_pag2:
+        if pagina_atual < total_paginas and st.button("➡️ Próxima Página"):
+            st.session_state['pagina'] = pagina_atual + 1
+            st.rerun()        
+
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("📊 **Ranking de Leis Mais Lidas**")
