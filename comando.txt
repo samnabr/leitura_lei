@@ -5,8 +5,9 @@ https://lei-card.streamlit.app/
 
 COMMIT E push
 
+git pull origin main --rebase
 git add .
-git commit -m "Corrige: substitui experimental_rerun por rerun"
+git commit -m "campo do formulário são limpos"
 git push origin main
 
 
