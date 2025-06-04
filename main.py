@@ -119,11 +119,44 @@ if concurso_selecionado != "Selecionar" and lei_selecionada != "Selecionar":
         with st.expander(f"📌 {item['pergunta']}"):
             st.markdown(f"<div style='font-size: {fonte}px;'><b>Resposta:</b> {item['resposta']}</div>", unsafe_allow_html=True)
             st.caption(f"📖 Referência: {item['referencia']}  \n📘 Lei: {item['lei']}  \n🎯 Concurso: {item.get('concurso', '[Sem Concurso]')}")
-            if st.button(f"✅ Marcar como lido ({item.get('vezes_lido', 0)}x)", key=f"btn_lido_{i}"):
-                dados[i]["vezes_lido"] = dados[i].get("vezes_lido", 0) + 1
-                with open(ARQUIVO_JSON, "w", encoding="utf-8") as f:
-                    json.dump(dados, f, ensure_ascii=False, indent=2)
-                st.rerun()
+
+            col1, col2, col3 = st.columns([1, 1, 2])
+
+            with col1:
+                if st.button(f"✅ Lido ({item.get('vezes_lido', 0)}x)", key=f"btn_lido_{i}"):
+                    dados[i]["vezes_lido"] = dados[i].get("vezes_lido", 0) + 1
+                    with open(ARQUIVO_JSON, "w", encoding="utf-8") as f:
+                        json.dump(dados, f, ensure_ascii=False, indent=2)
+                    st.experimental_rerun()
+
+            with col2:
+                if st.button("✏️ Editar", key=f"editar_{i}"):
+                    with st.form(f"form_editar_{i}"):
+                        nova_pergunta = st.text_area("Editar pergunta", value=item["pergunta"])
+                        nova_resposta = st.text_area("Editar resposta", value=item["resposta"])
+                        nova_referencia = st.text_input("Editar referência", value=item["referencia"])
+                        nova_concurso = st.text_input("Editar concurso", value=item["concurso"])
+                        nova_lei = st.text_input("Editar lei", value=item["lei"])
+                        confirmar = st.form_submit_button("Salvar alterações")
+                        if confirmar:
+                            dados[i]["pergunta"] = nova_pergunta
+                            dados[i]["resposta"] = nova_resposta
+                            dados[i]["referencia"] = nova_referencia
+                            dados[i]["concurso"] = nova_concurso
+                            dados[i]["lei"] = nova_lei
+                            with open(ARQUIVO_JSON, "w", encoding="utf-8") as f:
+                                json.dump(dados, f, ensure_ascii=False, indent=2)
+                            st.success("✅ Alterações salvas com sucesso!")
+                            st.experimental_rerun()
+
+            with col3:
+                if st.button("🗑️ Excluir", key=f"excluir_{i}"):
+                    dados.pop(i)
+                    with open(ARQUIVO_JSON, "w", encoding="utf-8") as f:
+                        json.dump(dados, f, ensure_ascii=False, indent=2)
+                    st.warning("❌ Card excluído.")
+                    st.experimental_rerun()
+
 
 # 🔹 Ranking de leis mais lidas
 st.sidebar.markdown("---")
