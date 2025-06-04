@@ -127,7 +127,7 @@ if concurso_selecionado != "Selecionar" and lei_selecionada != "Selecionar":
                     dados[i]["vezes_lido"] = dados[i].get("vezes_lido", 0) + 1
                     with open(ARQUIVO_JSON, "w", encoding="utf-8") as f:
                         json.dump(dados, f, ensure_ascii=False, indent=2)
-                    st.experimental_rerun()
+                    st.rerun()
 
             with col2:
                 if st.button("✏️ Editar", key=f"editar_{i}"):
@@ -147,7 +147,7 @@ if concurso_selecionado != "Selecionar" and lei_selecionada != "Selecionar":
                             with open(ARQUIVO_JSON, "w", encoding="utf-8") as f:
                                 json.dump(dados, f, ensure_ascii=False, indent=2)
                             st.success("✅ Alterações salvas com sucesso!")
-                            st.experimental_rerun()
+                            st.rerun()
 
             with col3:
                 if st.button("🗑️ Excluir", key=f"excluir_{i}"):
@@ -155,7 +155,7 @@ if concurso_selecionado != "Selecionar" and lei_selecionada != "Selecionar":
                     with open(ARQUIVO_JSON, "w", encoding="utf-8") as f:
                         json.dump(dados, f, ensure_ascii=False, indent=2)
                     st.warning("❌ Card excluído.")
-                    st.experimental_rerun()
+                    st.rerun()
 
 
 # 🔹 Ranking de leis mais lidas

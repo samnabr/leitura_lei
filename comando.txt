@@ -2,10 +2,19 @@ streamlit run main.py
 
 https://lei-card.streamlit.app/
 
-Sincronize seu repositório local com o GitHub remoto:
+
+
+1-Adicione todos os arquivos modificados:
+
+git add .
+
+2-CRIAR UM NOVO COMMIT 
+git commit -m
+
+3-Sincronize seu repositório local com o GitHub remoto:
 
 git pull origin main --rebase
 
-Depois envie as atualizações normalmente:
+4-Depois envie as atualizações normalmente:
 
 git push origin main
