@@ -100,7 +100,7 @@ if concurso_selecionado != "Selecionar" and lei_selecionada != "Selecionar":
     st.markdown(f"<h2 style='font-size: {fonte + 8}px;'>🎯 Concurso: {concurso_selecionado}</h2>", unsafe_allow_html=True)
     st.markdown(f"<h3 style='font-size: {fonte + 4}px;'>📘 Lei: {lei_selecionada}</h3>", unsafe_allow_html=True)
     for i, item in perguntas_filtradas:
-        with st.expander(f"📌 <span style='font-size:{fonte}px'>{item['pergunta']}</span>", unsafe_allow_html=True):
+        with st.expander(f"📌 {item['pergunta']}"):
             st.markdown(f"<div style='font-size: {fonte}px;'><b>Resposta:</b> {item['resposta']}</div>", unsafe_allow_html=True)
             st.caption(f"📖 Referência: {item['referencia']}  \n📘 Lei: {item['lei']}  \n🎯 Concurso: {item.get('concurso', '[Sem Concurso]')}")
             col1, col2, col3 = st.columns([1, 1, 1])
