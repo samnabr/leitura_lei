@@ -113,26 +113,35 @@ if concurso_selecionado != "Selecionar" and lei_selecionada != "Selecionar":
                     st.rerun()
 
             with col2:
-                with st.expander("✏️ Editar", expanded=False):
-                    with st.form(f"form_editar_{i}"):
-                        nova_pergunta = st.text_area("Pergunta", value=item["pergunta"])
-                        nova_resposta = st.text_area("Resposta", value=item["resposta"])
-                        nova_referencia = st.text_input("Referência", value=item["referencia"])
-                        nova_concurso = st.text_input("Concurso", value=item["concurso"])
-                        nova_lei = st.text_input("Lei", value=item["lei"])
-                        confirmar = st.form_submit_button("Salvar alterações")
-                        if confirmar:
-                            dados[i].update({
-                                "pergunta": nova_pergunta,
-                                "resposta": nova_resposta,
-                                "referencia": nova_referencia,
-                                "concurso": nova_concurso,
-                                "lei": nova_lei
-                            })
-                            with open(ARQUIVO_JSON, "w", encoding="utf-8") as f:
-                                json.dump(dados, f, ensure_ascii=False, indent=2)
-                            st.success("✅ Alterações salvas com sucesso!")
-                            st.rerun()
+                if st.button("✏️ Editar", key=f"editar_{i}"):
+                    st.session_state.editar_index = i
+
+            # Fora do loop, após exibir todos os cards:
+            if "editar_index" in st.session_state:
+                idx = st.session_state.editar_index
+                item = dados[idx]
+                st.markdown("---")
+                st.subheader("✏️ Editar Pergunta")
+                with st.form(f"form_editar_{idx}"):
+                    nova_pergunta = st.text_area("Pergunta", value=item["pergunta"])
+                    nova_resposta = st.text_area("Resposta", value=item["resposta"])
+                    nova_referencia = st.text_input("Referência", value=item["referencia"])
+                    nova_concurso = st.text_input("Concurso", value=item["concurso"])
+                    nova_lei = st.text_input("Lei", value=item["lei"])
+                    confirmar = st.form_submit_button("Salvar alterações")
+                    if confirmar:
+                        dados[idx].update({
+                            "pergunta": nova_pergunta,
+                            "resposta": nova_resposta,
+                            "referencia": nova_referencia,
+                            "concurso": nova_concurso,
+                            "lei": nova_lei
+                        })
+                        with open(ARQUIVO_JSON, "w", encoding="utf-8") as f:
+                            json.dump(dados, f, ensure_ascii=False, indent=2)
+                        del st.session_state.editar_index
+                        st.success("✅ Alterações salvas com sucesso!")
+                        st.rerun()
 
             with col3:
                 if st.button("🗑️ Excluir", key=f"excluir_{i}"):
