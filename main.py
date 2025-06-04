@@ -3,9 +3,22 @@ import json
 import os
 from collections import defaultdict, Counter
 
-ARQUIVO_JSON = "perguntas.json"
+# ✅ Coloque essa linha logo depois dos imports!
+st.set_page_config(page_title="Leitura de Leis por Cards", layout="centered")
 
-# Carregar dados existentes
+# 🔐 Login do usuário
+usuario = st.text_input("🔐 Nome de usuário:")
+if not usuario:
+    st.warning("Digite seu nome para continuar.")
+    st.stop()
+
+# 🔁 Criar pasta 'dados' se não existir
+os.makedirs("dados", exist_ok=True)
+
+# 🔁 Caminho personalizado para o arquivo do usuário
+ARQUIVO_JSON = f"dados/{usuario}_perguntas.json"
+
+# Carregar dados existentes (do arquivo do usuário)
 if os.path.exists(ARQUIVO_JSON):
     with open(ARQUIVO_JSON, "r", encoding="utf-8") as f:
         dados = json.load(f)
@@ -15,7 +28,7 @@ if os.path.exists(ARQUIVO_JSON):
 else:
     dados = []
 
-st.set_page_config(page_title="Leitura de Leis por Cards", layout="centered")
+
 
 # 🔹 Controle de tamanho de fonte
 st.sidebar.markdown("---")
