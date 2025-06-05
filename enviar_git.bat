@@ -1,31 +1,35 @@
 @echo off
 echo ================================
-echo Configurando Git para este PC...
+echo Iniciando atualização do projeto via Git
 echo ================================
 
-REM === Configurar nome e email (altere aqui!)
+REM === Configurações globais (só precisa uma vez, mas está aqui por segurança)
 git config --global user.name "samnabr"
 git config --global user.email "snr.abreu@gmail.com"
 
-echo Nome e e-mail configurados com sucesso!
+REM === Verificar se há alterações
+git status --porcelain > temp_git_status.txt
+for /f %%i in ('type temp_git_status.txt ^| find /c /v ""') do set COUNT=%%i
+del temp_git_status.txt
 
-REM === Comandos para commit e push ===
+if %COUNT%==0 (
+    echo Nenhuma alteração encontrada. Nada para enviar ao GitHub.
+    goto FIM
+)
+
 echo.
-echo Adicionando arquivos...
+echo Adicionando arquivos modificados...
 git add .
 
-echo Criando commit...
-git commit -m "primeiro commit"
+echo.
+set /p mensagem="Digite a mensagem do commit: "
+git commit -m "%mensagem%"
 
-echo Criando branch main...
-git branch -M main
-
-echo Adicionando repositório remoto...
-git remote add origin https://github.com/samnabr/leitura_lei.git
-
+echo.
 echo Enviando para o GitHub...
-git push -u origin main
+git push origin main
 
+:FIM
 echo ================================
 echo Finalizado! Verifique o GitHub :)
 pause
