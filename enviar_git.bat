@@ -3,7 +3,7 @@ echo ================================
 echo Iniciando atualização do projeto via Git
 echo ================================
 
-REM === Configurações globais (só precisa uma vez, mas está aqui por segurança)
+REM === Configurações globais (só precisa uma vez, mas está aqui por segurançaa)
 git config --global user.name "samnabr"
 git config --global user.email "snr.abreu@gmail.com"
 
